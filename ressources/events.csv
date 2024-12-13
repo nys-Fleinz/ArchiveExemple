@@ -1,0 +1,10 @@
+nom de l'event,description,probabilité
+Double Points,Tes points sont doublés pour ce tour.,0.4
+Question Bonus,Tu gagnes 10 points supplémentaires si tu as bon !,0.2
+Récupère une Vie,Félicitations ! Tu récupères une vie !,0.1
+Échange de Points,Tu échanges tes points avec un autre joueur aléatoire.,0.2
+Bloque Ton Adversaire,Un adversaire au choix saute son tour.,0.2
+Immunité,Tu es immunisé contre la perte de vie pour ce tour.,0.2
+Mort instantanée,Oups... une erreur et c'est fini.,0.15
+Gain Surprise,Tu gagnes entre 1 et 3 points aléatoirement.,0.3
+Question Fatale,Une seule mauvaise réponse te fait perdre deux vies.,0.1
