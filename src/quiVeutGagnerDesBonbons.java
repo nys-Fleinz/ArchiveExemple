@@ -60,21 +60,86 @@ class quiVeutGagnerDesBonbons extends Program {
     boolean poserQuestion(Joueur joueur, int numeroQuestion, Joueur[] joueurs) {
         String[] event = getEvent();
         String[] question = getQuestion(numeroQuestion);
-        String reponses="";
-        String header="";
-        int prix = (int) (random()*11)+10;
-        for(int i=0; i<stringToInt(question[1]); i=i+1) {
-            reponses=reponses+question[i+2]+"\t";
-            header=header+ANSI_BLUE+"REPONSE "+ANSI_PURPLE+(i+1)+"\t";
-        }
-        println(ANSI_GREEN+joueur.nom+ANSI_PURPLE+" à ton tour !\n");
-        if(!equals(event[0], "no_event")) {
+
+        int prix = (int) (random()*11)+10; //prix aléatoire entre 10 et 20
+        println("[🌀] "+ANSI_GREEN+joueur.nom+ANSI_PURPLE+" à ton tour !"); 
+        if(!equals(event[0], "no_event")) { //afficher l'événement si il y en a un
             println("[🎲] "+ANSI_YELLOW+event[0]+" "+ANSI_BLUE+event[1]);
         }
-        println(ANSI_GREEN+ "[❓] " +question[0]+ANSI_RESET+ ANSI_CYAN+" (🍬 "+prix+" bonbons)"+ANSI_RESET);
-        println(header);
-        println(reponses);
+
+        println(ANSI_CYAN+"🍬 Question à "+prix+" bonbons 🍬\n"+ANSI_RESET); //afficher le prix
+        println(ANSI_GREEN+ "[--❓--] "+ANSI_RESET);
+        formaterQuestion(question); //formater la question
+        println(ANSI_GREEN+ "[--❓--] "+ANSI_RESET);
+        
+        afficherQuestion(question); //afficher les réponses
         return repondreQuestion(joueur, question, event, prix, joueurs);
+    }
+
+    //Formater la question pour l'affichage
+    void formaterQuestion(String[] question) {
+        // Si deux caractères question[0] sont égaux à par exemple $o, faire un print(ANSI_ORANGE), le o est pour le orange
+        for(int i=0; i<length(question[0]); i=i+1) {
+            if(equals(substring(question[0], i, i+1), "$")) {
+            switch(substring(question[0], i+1, i+2)) {
+                case "b":
+                print(ANSI_BLUE);
+                break;
+                case "p":
+                print(ANSI_PURPLE);
+                break;
+                case "g":
+                print(ANSI_GREEN);
+                break;
+                case "r":
+                print(ANSI_RED);
+                break;
+                case "c":
+                print(ANSI_CYAN);
+                break;
+                case "y":
+                print(ANSI_YELLOW);
+                break;
+                case "R":
+                print(ANSI_RED_BG);
+                break;
+                case "G":
+                print(ANSI_GREEN_BG);
+                break;
+                case "Y":
+                print(ANSI_YELLOW_BG);
+                break;
+                case "B":
+                print(ANSI_BLUE_BG);
+                break;
+                case "P":
+                print(ANSI_PURPLE_BG);
+                break;
+                case "C":
+                print(ANSI_CYAN_BG);
+                break;
+                case "t":
+                print(ANSI_RESET);
+                break;
+            }
+            i=i+1;
+            } else {
+                print(substring(question[0], i, i+1));
+            }
+        }
+        println(ANSI_RESET);
+    }
+
+        void afficherQuestion(String[] question){
+        String header = "";
+        String reponses ="";
+        int position = 0;
+
+        for(int i=0; i<stringToInt(question[1]); i=i+1) {
+            print(ANSI_BLUE+"REPONSE "+ANSI_PURPLE+(i+1)+" -> ");
+            print(question[i+2]);
+            println();
+        }
     }
 
 
@@ -90,7 +155,7 @@ class quiVeutGagnerDesBonbons extends Program {
             joueur.bonnesReponses+=1;
             resultat=true;
         } else {
-            println(ANSI_RED+"[❌] Mauvaise réponse :(");
+            println(ANSI_RED+"[❌] Mauvaise réponse :("+ANSI_RESET);
             resultat=false;
             if(!(joueur.mauvaisesReponses<=0)) { //permets de ne pas avoir de nombres négatifs
                 joueur.mauvaisesReponses+=-1;
@@ -168,107 +233,116 @@ class quiVeutGagnerDesBonbons extends Program {
     // EVENTS
     void appliquerEvent(Joueur joueur, String[] event, boolean resultat, int prix, Joueur[] joueurs) {
         if (!equals(event[0], "no_event")) {
-            // Double Points
-            if (equals(event[0], "Double Points")) {
-                if (resultat) {
-                    joueur.points = joueur.points + prix;
-                    println(ANSI_YELLOW + "[💥] Double Points ! " + ANSI_RESET + "Les points de la question précédente sont doublés.");
-                }
-            }
-
-            // Question Bonus
-            else if (equals(event[0], "Question Bonus")) {
-                if (resultat) {
-                    joueur.points = joueur.points + 10;
-                    println(ANSI_GREEN + "[✨] Question Bonus ! " + ANSI_RESET + "Tu gagnes 10 points supplémentaires.");
-                }
-            }
-
-            // Récupère une Vie
-            else if (equals(event[0], "Récupère une Vie")) {
-                joueur.vies = joueur.vies + 1;
-                println(ANSI_RED + "[❤️] Récupère une Vie ! " + ANSI_RESET + "Félicitations, tu récupères une vie !");
-            }
-
-            // Échange de Points
-            else if (equals(event[0], "Échange de Points")) {
-                if (!(length(joueurs) == 1)) {
-                    int numeroJoueurEchanger = (int) (random() * length(joueurs));
-                    int temp = joueurs[numeroJoueurEchanger].points;
-                    joueurs[numeroJoueurEchanger].points = joueur.points;
-                    joueur.points = temp;
-                    clearScreen();
-                    println(ANSI_BLUE + "[🔄] Échange de Points ! " + ANSI_RESET + "Tes points ont été échangés avec " + joueurs[numeroJoueurEchanger].nom + ".");
-                    printStats(joueur);
-                    printStats(joueurs[numeroJoueurEchanger]);
-                    print("Appuyez sur entrée pour continuer...");
-                    readString();
-                }
-            }
-
-            // Bloque Ton Adversaire
-            else if (equals(event[0], "Bloque Ton Adversaire")) {
-                if (!(length(joueurs) == 1)) {
-                    println("Choisis un adversaire à bloquer:");
-                    String listeJoueurs = "";
-                    for (int i = 0; i < length(joueurs); i = i + 1) {
-                        if (!equals(joueurs[i].nom, joueur.nom)) {
-                            listeJoueurs = listeJoueurs + " [" + (i + 1) + "] " + joueurs[i].nom + " ";
-                        }
+            switch (event[0]) {
+                case "Double Points":
+                    if (resultat) {
+                        joueur.points = joueur.points + prix;
+                        println(ANSI_YELLOW + "[💥] Double Points ! " + ANSI_RESET + "Les points de la question précédente sont doublés.");
                     }
-                    println(listeJoueurs);
-                    print("Numéro du joueur à bloquer: ");
-                    int numeroJoueurBloque = readInt() - 1;
-                    joueurs[numeroJoueurBloque].bloque = true;
-                    println(ANSI_BLUE + "[🚫] Bloque Ton Adversaire ! " + ANSI_RED + joueurs[numeroJoueurBloque].nom + ANSI_BLUE + " est bloqué pour un tour." + ANSI_RESET);
-                }
-            }
+                    break;
 
-            // Immunité
-            else if (equals(event[0], "Immunité")) {
-                if (!resultat) {
+                case "Question Bonus":
+                    if (resultat) {
+                        joueur.points = joueur.points + 10;
+                        println(ANSI_GREEN + "[✨] Question Bonus ! " + ANSI_RESET + "Tu gagnes 10 points supplémentaires.");
+                    }
+                    break;
+
+                case "Récupère une Vie":
                     joueur.vies = joueur.vies + 1;
-                    println(ANSI_CYAN + "[🛡️] Immunité ! " + ANSI_RESET + "Tu ne perds pas de vie ce tour.");
-                }
-            }
+                    println(ANSI_RED + "[❤️] Récupère une Vie ! " + ANSI_RESET + "Félicitations, tu récupères une vie !");
+                    break;
 
-            // Mort instantanée
-            else if (equals(event[0], "Mort instantanée")) {
-                if (!resultat) {
-                    joueur.vies = 0;
-                    println(ANSI_RED + "[☠️] Mort instantanée ! " + ANSI_RESET + "Tu es éliminé !");
-                }
-            }
+                case "Échange de Points":
+                    if (!(length(joueurs) == 1)) {
+                        int numeroJoueurEchanger = (int) (random() * length(joueurs));
+                        int temp = joueurs[numeroJoueurEchanger].points;
+                        joueurs[numeroJoueurEchanger].points = joueur.points;
+                        joueur.points = temp;
+                        clearScreen();
+                        println(ANSI_BLUE + "[🔄] Échange de Points ! " + ANSI_RESET + "Tes points ont été échangés avec " + joueurs[numeroJoueurEchanger].nom + ".");
+                        printStats(joueur);
+                        printStats(joueurs[numeroJoueurEchanger]);
+                        print("Appuyez sur entrée pour continuer...");
+                        readString();
+                    }
+                    break;
 
-            // Gain Surprise
-            else if (equals(event[0], "Gain Surprise")) {
-                int pointsGagnes = (int) (random() * 3) + 1; // Gain aléatoire entre 1 et 3
-                joueur.points = joueur.points + pointsGagnes;
-                println(ANSI_GREEN + "[🎁] Gain Surprise ! " + ANSI_RESET + "Tu gagnes " + pointsGagnes + " points.");
-            }
+                case "Bloque Ton Adversaire":
+                    if (!(length(joueurs) == 1)) {
+                        println("Choisis un adversaire à bloquer:");
+                        String listeJoueurs = "";
+                        for (int i = 0; i < length(joueurs); i = i + 1) {
+                            if (!equals(joueurs[i].nom, joueur.nom)) {
+                                listeJoueurs = listeJoueurs + " [" + (i + 1) + "] " + joueurs[i].nom + " ";
+                            }
+                        }
+                        println(listeJoueurs);
+                        print("Numéro du joueur à bloquer: ");
+                        int numeroJoueurBloque = readInt() - 1;
+                        joueurs[numeroJoueurBloque].bloque = true;
+                        println(ANSI_BLUE + "[🚫] Bloque Ton Adversaire ! " + ANSI_RED + joueurs[numeroJoueurBloque].nom + ANSI_BLUE + " est bloqué pour un tour." + ANSI_RESET);
+                    }
+                    break;
 
-            // Question Fatale
-            else if (equals(event[0], "Question Fatale")) {
-                if (!resultat) {
-                    joueur.vies = joueur.vies - 2;
-                    println(ANSI_RED + "[☠️] Question Fatale ! " + ANSI_RESET + "Une seule erreur et tu perds 2 vies !");
-                }
+                case "Immunité":
+                    if (!resultat) {
+                        joueur.vies = joueur.vies + 1;
+                        println(ANSI_CYAN + "[🛡️] Immunité ! " + ANSI_RESET + "Tu ne perds pas de vie ce tour.");
+                    }
+                    break;
+
+                case "Mort instantanée":
+                    if (!resultat) {
+                        joueur.vies = 0;
+                        println(ANSI_RED + "[☠️] Mort instantanée ! " + ANSI_RESET + "Tu es éliminé !");
+                    }
+                    break;
+
+                case "Gain Surprise":
+                    int pointsGagnes = (int) (random() * 3) + 1; // Gain aléatoire entre 1 et 3
+                    joueur.points = joueur.points + pointsGagnes;
+                    println(ANSI_GREEN + "[🎁] Gain Surprise ! " + ANSI_RESET + "Tu gagnes " + pointsGagnes + " points.");
+                    break;
+
+                case "Question Fatale":
+                    if (!resultat) {
+                        joueur.vies = joueur.vies - 2;
+                        println(ANSI_RED + "[☠️] Question Fatale ! " + ANSI_RESET + "Une seule erreur et tu perds 2 vies !");
+                    }
+                    break;
             }
         }
     }
 
-
     int donnerQuestion(boolean[] questionsPosees) {
-        int numeroQuestion=(int) (random()*rowCount(questions));
-        int compteur=0;
-        while((numeroQuestion==0 || questionsPosees[numeroQuestion]) && compteur<length(questionsPosees)) {
-            compteur=compteur+1;
-            numeroQuestion=(int) (random()*rowCount(questions));
+        int i=0;
+        //vérifier combien de questions ont déjà été posées
+        while(i<length(questionsPosees) && questionsPosees[i]) {
+            if(questionsPosees[i]) {
+                println("Question "+i+" posée");
+                i=i+1;
+            }
         }
-        if(!(compteur<length(questionsPosees))) {
+
+        //si toutes les questions ont été posées, réinitialiser le tableau
+        if(i==length(questionsPosees)) {
             initialiserTableauReponses(questionsPosees);
-            numeroQuestion=(int) (random()*rowCount(questions));
+            return donnerQuestion(questionsPosees);
         }
+
+        int numeroQuestion = (int) (random()*rowCount(questions));
+
+        // générer un numéro de question aléatoire et à partir de cette question, parcourir de 1 en 1 jusqu'à trouver une question non posée, mettre le compteur à 0 quand on arrive à la fin du tableau
+        // vérifier que la question n'est pas égale à 0, car c'est l'entête du fichier
+
+        while(questionsPosees[numeroQuestion] || numeroQuestion == 0) {
+            numeroQuestion = numeroQuestion + 1;
+            if(numeroQuestion == length(questionsPosees)) {
+            numeroQuestion = 1;
+            }
+        }
+
         questionsPosees[numeroQuestion]=true;
         return numeroQuestion;
     }
