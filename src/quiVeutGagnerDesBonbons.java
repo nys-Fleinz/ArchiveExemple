@@ -2,10 +2,10 @@ import extensions.CSVFile;
 import extensions.File;
 
 
-class bonbon extends Program {
+class quiVeutGagnerDesBonbons extends Program {
     final String nomDuJeu = "Qui veut gagner des bonbons";
-    CSVFile questions = loadCSV("questions.csv");
-    CSVFile eventsCSV = loadCSV("events.csv");
+    CSVFile questions = loadCSV("../ressources/questions.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
+    CSVFile eventsCSV = loadCSV("../ressources/events.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
 
 
     void initialiserTableauReponses(boolean[] questionsPosees) {
@@ -23,15 +23,13 @@ class bonbon extends Program {
 
 
     //Crée le tableau de joueurs à l'aide du nombre de l'entrée utilisateur 
-    Joueurs CreerJoueurs() {
+    Joueur[] CreerJoueurs() {
         println("Combien de joueurs êtes-vous?"); //demander le nombre de joueurs
         int nombreJoueurs = readInt();
-        Joueurs tab = new Joueurs();
-        tab.joueur = new Joueur[nombreJoueurs];
+        Joueur[] tab = new Joueur[nombreJoueurs];
         for(int i=0; i<nombreJoueurs; i=i+1) {
             println("Insérez le nom du joueur numéro "+ANSI_BLUE+(i+1)+ANSI_RESET+": "); //demander le nom de chaque joueur numéro i
-            tab.joueur[i] = newJoueur(readString());
-            tab.nbJoueurs=tab.nbJoueurs+1;
+            tab[i] = newJoueur(readString());
         }
         return tab;
     }
@@ -59,7 +57,7 @@ class bonbon extends Program {
         return ligne;
     }
 
-    boolean poserQuestion(Joueur joueur, int numeroQuestion, Joueurs joueurs) {
+    boolean poserQuestion(Joueur joueur, int numeroQuestion, Joueur[] joueurs) {
         String[] event = getEvent();
         String[] question = getQuestion(numeroQuestion);
         String reponses="";
@@ -81,7 +79,7 @@ class bonbon extends Program {
 
 
     //Traîter les entrées utilisateurs et quelques affichages
-    boolean repondreQuestion(Joueur joueur, String[] question, String[] event, int prix, Joueurs joueurs) {
+    boolean repondreQuestion(Joueur joueur, String[] question, String[] event, int prix, Joueur[] joueurs) {
         int numeroBonneReponse=stringToInt(question[stringToInt(question[1])+2]); //récupérer le numéro de la bonne réponse en fonction du nombre de réponse
         print(ANSI_BLUE+"\n[🍬] "+ANSI_GREEN+"Numéro de la réponse: "+ANSI_PURPLE);
         int reponse = readInt();
@@ -121,14 +119,14 @@ class bonbon extends Program {
         println(ANSI_BLUE   + "============================" + ANSI_RESET);
     }
 
-    void printTableauScores(Joueurs joueurs) {
+    void printTableauScores(Joueur[] joueurs) {
         clearScreen();
         println(ANSI_BLUE + "\n======= Tableau des Scores ========" + ANSI_RESET);
         //AFFICHAGE HEADER
         println(ANSI_YELLOW+"|"+ANSI_PURPLE+" JOUEURS          "+ANSI_YELLOW+" | "+ANSI_RED+"PTS "+ANSI_YELLOW+"| "+ANSI_GREEN+" VIES  "+ANSI_YELLOW+"|");
         // Parcours des joueurs pour afficher leurs stats
-        for (int i = 0; i < joueurs.nbJoueurs; i++) {
-            Joueur joueur = joueurs.joueur[i];
+        for (int i = 0; i < length(joueurs); i++) {
+            Joueur joueur = joueurs[i];
             String nom = joueur.nom;
             int points = joueur.points;
             int vies = joueur.vies;
@@ -168,7 +166,7 @@ class bonbon extends Program {
     }
 
     // EVENTS
-    void appliquerEvent(Joueur joueur, String[] event, boolean resultat, int prix, Joueurs joueurs) {
+    void appliquerEvent(Joueur joueur, String[] event, boolean resultat, int prix, Joueur[] joueurs) {
         if (!equals(event[0], "no_event")) {
             // Double Points
             if (equals(event[0], "Double Points")) {
@@ -194,15 +192,15 @@ class bonbon extends Program {
 
             // Échange de Points
             else if (equals(event[0], "Échange de Points")) {
-                if (!(length(joueurs.joueur) == 1)) {
-                    int numeroJoueurEchanger = (int) (random() * joueurs.nbJoueurs);
-                    int temp = joueurs.joueur[numeroJoueurEchanger].points;
-                    joueurs.joueur[numeroJoueurEchanger].points = joueur.points;
+                if (!(length(joueurs) == 1)) {
+                    int numeroJoueurEchanger = (int) (random() * length(joueurs));
+                    int temp = joueurs[numeroJoueurEchanger].points;
+                    joueurs[numeroJoueurEchanger].points = joueur.points;
                     joueur.points = temp;
                     clearScreen();
-                    println(ANSI_BLUE + "[🔄] Échange de Points ! " + ANSI_RESET + "Tes points ont été échangés avec " + joueurs.joueur[numeroJoueurEchanger].nom + ".");
+                    println(ANSI_BLUE + "[🔄] Échange de Points ! " + ANSI_RESET + "Tes points ont été échangés avec " + joueurs[numeroJoueurEchanger].nom + ".");
                     printStats(joueur);
-                    printStats(joueurs.joueur[numeroJoueurEchanger]);
+                    printStats(joueurs[numeroJoueurEchanger]);
                     print("Appuyez sur entrée pour continuer...");
                     readString();
                 }
@@ -210,19 +208,19 @@ class bonbon extends Program {
 
             // Bloque Ton Adversaire
             else if (equals(event[0], "Bloque Ton Adversaire")) {
-                if (!(length(joueurs.joueur) == 1)) {
+                if (!(length(joueurs) == 1)) {
                     println("Choisis un adversaire à bloquer:");
                     String listeJoueurs = "";
-                    for (int i = 0; i < length(joueurs.joueur); i = i + 1) {
-                        if (!equals(joueurs.joueur[i].nom, joueur.nom)) {
-                            listeJoueurs = listeJoueurs + " [" + (i + 1) + "] " + joueurs.joueur[i].nom + " ";
+                    for (int i = 0; i < length(joueurs); i = i + 1) {
+                        if (!equals(joueurs[i].nom, joueur.nom)) {
+                            listeJoueurs = listeJoueurs + " [" + (i + 1) + "] " + joueurs[i].nom + " ";
                         }
                     }
                     println(listeJoueurs);
                     print("Numéro du joueur à bloquer: ");
                     int numeroJoueurBloque = readInt() - 1;
-                    joueurs.joueur[numeroJoueurBloque].bloque = true;
-                    println(ANSI_BLUE + "[🚫] Bloque Ton Adversaire ! " + ANSI_RED + joueurs.joueur[numeroJoueurBloque].nom + ANSI_BLUE + " est bloqué pour un tour." + ANSI_RESET);
+                    joueurs[numeroJoueurBloque].bloque = true;
+                    println(ANSI_BLUE + "[🚫] Bloque Ton Adversaire ! " + ANSI_RED + joueurs[numeroJoueurBloque].nom + ANSI_BLUE + " est bloqué pour un tour." + ANSI_RESET);
                 }
             }
 
@@ -275,15 +273,15 @@ class bonbon extends Program {
         return numeroQuestion;
     }
 
-    boolean partieTerminee(Joueurs joueurs) {
+    boolean partieTerminee(Joueur[] joueurs) {
         boolean termine=false;
         int compteur=0;
         int elimines=0;
-        while(compteur<length(joueurs.joueur) && !termine) {
-            if(joueurElimine(joueurs.joueur[compteur])) {
+        while(compteur<length(joueurs) && !termine) {
+            if(joueurElimine(joueurs[compteur])) {
                 elimines=elimines+1;
             }
-            if(joueurs.joueur[compteur].bonnesReponses>=10) {
+            if(joueurs[compteur].bonnesReponses>=10) {
                 termine=true;
             }
             compteur=compteur+1;
@@ -295,11 +293,11 @@ class bonbon extends Program {
         return termine;
     }
 
-    void tour(Joueurs joueurs, boolean[] questionsPosees) {
-        for(int i=0; i<length(joueurs.joueur); i=i+1) {
-            if(!joueurElimine(joueurs.joueur[i])) {
+    void tour(Joueur[] joueurs, boolean[] questionsPosees) {
+        for(int i=0; i<length(joueurs); i=i+1) {
+            if(!joueurElimine(joueurs[i])) {
                 clearScreen();
-                poserQuestion(joueurs.joueur[i], donnerQuestion(questionsPosees), joueurs);
+                poserQuestion(joueurs[i], donnerQuestion(questionsPosees), joueurs);
             }
         }
     }
@@ -319,7 +317,7 @@ class bonbon extends Program {
         println(ANSI_BLUE + "[" + "🏆" + ANSI_BLUE + "] " + ANSI_PURPLE + "Bonne chance et amusez-vous bien !\n\n" + ANSI_RESET);
 
         // INITIALISER JOUEURS
-        Joueurs joueurs = CreerJoueurs();
+        Joueur[] joueurs = CreerJoueurs();
         
         // INITIALISER DATA
         boolean[] questionsPosees = new boolean[rowCount(questions)];
