@@ -48,7 +48,7 @@ class quiVeutGagnerDesBonbons extends Program {
         return ligne;
     }
 
-    //récupérer un tableau de String d'une ligne aléatoire du fichier questions.csv
+    //récupérer un tableau de String d'une ligne du fichier questions.csv
     String[] getQuestion(int numeroQuestion) {
         String[] ligne = new String[columnCount(questions, numeroQuestion)];
         for(int i=0; i<length(ligne); i=i+1) {
