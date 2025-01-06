@@ -43,7 +43,7 @@ class quiVeutGagnerDesBonbons extends Program {
                 ligne[i] = getCell(eventsCSV, eventRandom, i);
             }
         } else {
-            ligne[0]="no_event";
+            ligne[0]="no_event"; //si le random est plus grand que la probabilité, on retourne un tableau avec "no_event"
         }
         return ligne;
     }
@@ -59,7 +59,7 @@ class quiVeutGagnerDesBonbons extends Program {
 
     boolean poserQuestion(Joueur joueur, int numeroQuestion, Joueur[] joueurs) {
         String[] event = getEvent();
-        String[] question = getQuestion(numeroQuestion);
+        String[] question = getQuestion(numeroQuestion); //récupérer la question
 
         int prix = (int) (random()*11)+10; //prix aléatoire entre 10 et 20
         println("[🌀] "+ANSI_GREEN+joueur.nom+ANSI_PURPLE+" à ton tour !"); 
@@ -76,50 +76,54 @@ class quiVeutGagnerDesBonbons extends Program {
         return repondreQuestion(joueur, question, event, prix, joueurs);
     }
 
+
     //Formater la question pour l'affichage
     void formaterQuestion(String[] question) {
         // Si deux caractères question[0] sont égaux à par exemple $o, faire un print(ANSI_ORANGE), le o est pour le orange
         for(int i=0; i<length(question[0]); i=i+1) {
             if(equals(substring(question[0], i, i+1), "$")) {
-            switch(substring(question[0], i+1, i+2)) {
-                case "b":
+            switch(substring(question[0], i+1, i+2)) { // récupérer le caractère après le $
+                case "b": // bleu
                 print(ANSI_BLUE);
                 break;
-                case "p":
+                case "p": // violet
                 print(ANSI_PURPLE);
                 break;
-                case "g":
+                case "g": // vert
                 print(ANSI_GREEN);
                 break;
-                case "r":
+                case "r": // rouge
                 print(ANSI_RED);
                 break;
-                case "c":
+                case "c": // cyan
                 print(ANSI_CYAN);
                 break;
-                case "y":
+                case "y": // jaune
                 print(ANSI_YELLOW);
                 break;
-                case "R":
+                case "R": // fond en rouge
                 print(ANSI_RED_BG);
                 break;
-                case "G":
+                case "G": // fond en vert
                 print(ANSI_GREEN_BG);
                 break;
-                case "Y":
+                case "Y": // fond en jaune
                 print(ANSI_YELLOW_BG);
                 break;
-                case "B":
+                case "B": // fond en bleu
                 print(ANSI_BLUE_BG);
                 break;
-                case "P":
+                case "P": // fond en violet
                 print(ANSI_PURPLE_BG);
                 break;
-                case "C":
+                case "C": // fond en cyan
                 print(ANSI_CYAN_BG);
                 break;
-                case "t":
+                case "t": // reset la couleur
                 print(ANSI_RESET);
+                break;
+                case "n": // ajouter un retour à la ligne
+                println();
                 break;
             }
             i=i+1;
@@ -130,7 +134,7 @@ class quiVeutGagnerDesBonbons extends Program {
         println(ANSI_RESET);
     }
 
-        void afficherQuestion(String[] question){
+    void afficherQuestion(String[] question){
         String header = "";
         String reponses ="";
         int position = 0;
@@ -138,7 +142,7 @@ class quiVeutGagnerDesBonbons extends Program {
         for(int i=0; i<stringToInt(question[1]); i=i+1) {
             print(ANSI_BLUE+"REPONSE "+ANSI_PURPLE+(i+1)+" -> ");
             print(question[i+2]);
-            println();
+                println();
         }
     }
 
