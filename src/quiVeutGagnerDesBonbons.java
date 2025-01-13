@@ -1,11 +1,9 @@
 import extensions.CSVFile;
-import extensions.File;
-
 
 class quiVeutGagnerDesBonbons extends Program {
     final String nomDuJeu = "Qui veut gagner des bonbons";
-    CSVFile questions = loadCSV("../ressources/questions.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
-    CSVFile eventsCSV = loadCSV("../ressources/events.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
+    CSVFile questions = loadCSV("./ressources/questions.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
+    CSVFile eventsCSV = loadCSV("./ressources/events.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
 
 
     void initialiserTableauReponses(boolean[] questionsPosees) {
@@ -14,6 +12,15 @@ class quiVeutGagnerDesBonbons extends Program {
         }
     }
 
+    //Boucle vérifiant si le string est un nombre en le convertisssant en char puis vérifiant si il est bien entre '0' et '9'
+    int requireInt() {
+        String input = readString();
+        while(length(input)!=1 || !(charAt(input, 0)>='1' && charAt(input, 0)<='9')) {
+            print(ANSI_YELLOW+"[⚠️ ]"+ANSI_RED+" Veuillez entrer un nombre entre 1 et 9: "+ ANSI_GREEN);
+            input = readString();
+        }
+        return charToInt(charAt(input, 0));
+    }
 
     Joueur newJoueur(String nom) {
         Joueur joueur = new Joueur();
@@ -24,11 +31,11 @@ class quiVeutGagnerDesBonbons extends Program {
 
     //Crée le tableau de joueurs à l'aide du nombre de l'entrée utilisateur 
     Joueur[] CreerJoueurs() {
-        println("Combien de joueurs êtes-vous?"); //demander le nombre de joueurs
-        int nombreJoueurs = readInt();
+        println(ANSI_BLUE+"[👱] Combien de joueurs êtes-vous?"); //demander le nombre de joueurs
+        int nombreJoueurs = requireInt();
         Joueur[] tab = new Joueur[nombreJoueurs];
         for(int i=0; i<nombreJoueurs; i=i+1) {
-            println("Insérez le nom du joueur numéro "+ANSI_BLUE+(i+1)+ANSI_RESET+": "); //demander le nom de chaque joueur numéro i
+            print(ANSI_GREEN+"Insérez le nom du joueur numéro "+ANSI_BLUE+(i+1)+ANSI_RESET+": "+ANSI_PURPLE); //demander le nom de chaque joueur numéro i
             tab[i] = newJoueur(readString());
         }
         return tab;
@@ -58,6 +65,13 @@ class quiVeutGagnerDesBonbons extends Program {
     }
 
     boolean poserQuestion(Joueur joueur, int numeroQuestion, Joueur[] joueurs) {
+        if(joueur.bloque) {
+            joueur.bloque=false;
+            println(ANSI_RED+"[🚫] "+ANSI_GREEN+joueur.nom+ANSI_RED+" est bloqué pour ce tour.");
+            delay(2000);
+            return false;
+        }
+
         String[] event = getEvent();
         String[] question = getQuestion(numeroQuestion); //récupérer la question
 
@@ -135,14 +149,10 @@ class quiVeutGagnerDesBonbons extends Program {
     }
 
     void afficherQuestion(String[] question){
-        String header = "";
-        String reponses ="";
-        int position = 0;
-
         for(int i=0; i<stringToInt(question[1]); i=i+1) {
             print(ANSI_BLUE+"REPONSE "+ANSI_PURPLE+(i+1)+" -> ");
             print(question[i+2]);
-                println();
+            println();
         }
     }
 
@@ -151,10 +161,10 @@ class quiVeutGagnerDesBonbons extends Program {
     boolean repondreQuestion(Joueur joueur, String[] question, String[] event, int prix, Joueur[] joueurs) {
         int numeroBonneReponse=stringToInt(question[stringToInt(question[1])+2]); //récupérer le numéro de la bonne réponse en fonction du nombre de réponse
         print(ANSI_BLUE+"\n[🍬] "+ANSI_GREEN+"Numéro de la réponse: "+ANSI_PURPLE);
-        int reponse = readInt();
+        int reponse = requireInt();
         boolean resultat;
         if(reponse==numeroBonneReponse) {
-            println(ANSI_GREEN+"[✅] Bonne réponse :) "+joueur.nom);
+            println(ANSI_GREEN+"[✅] Bonne réponse "+ joueur.nom +":) ");
             joueur.points+=prix;
             joueur.bonnesReponses+=1;
             resultat=true;
@@ -184,7 +194,7 @@ class quiVeutGagnerDesBonbons extends Program {
         println(ANSI_GREEN  + "[🍬] Points : " + ANSI_YELLOW + joueur.points + ANSI_RESET);
         println(ANSI_GREEN  + "[✅] Bonnes réponses : " + ANSI_YELLOW + joueur.bonnesReponses + ANSI_RESET);
         println(ANSI_GREEN  + "[❌] Mauvaises réponses : " + ANSI_YELLOW + joueur.mauvaisesReponses + ANSI_RESET);
-        println(ANSI_GREEN  + "[❤️] Vies restantes : " + viesToString(joueur.vies) + ANSI_RESET);
+        println(ANSI_GREEN  + "[❤️ ] Vies restantes : " + viesToString(joueur.vies) + ANSI_RESET);
         println(ANSI_BLUE   + "============================" + ANSI_RESET);
     }
 
@@ -229,7 +239,7 @@ class quiVeutGagnerDesBonbons extends Program {
     String viesToString(int nombreDeVies) {
         String affichage="";
         for(int i=0; i<nombreDeVies; i=i+1) {
-            affichage=affichage+"❤️";
+            affichage=affichage+"❤️ ";
         }
         return affichage;
     }
@@ -253,13 +263,18 @@ class quiVeutGagnerDesBonbons extends Program {
                     break;
 
                 case "Récupère une Vie":
-                    joueur.vies = joueur.vies + 1;
-                    println(ANSI_RED + "[❤️] Récupère une Vie ! " + ANSI_RESET + "Félicitations, tu récupères une vie !");
-                    break;
+                    if(joueur.vies<3) {
+                        joueur.vies = joueur.vies + 1;
+                        println(ANSI_RED + "[❤️ ] Récupère une Vie ! " + ANSI_RESET + "Félicitations, tu récupères une vie !");
+                        break;
+                    }
 
                 case "Échange de Points":
                     if (!(length(joueurs) == 1)) {
                         int numeroJoueurEchanger = (int) (random() * length(joueurs));
+                        if(joueurs[numeroJoueurEchanger] == joueur) {
+                            println();
+                        }
                         int temp = joueurs[numeroJoueurEchanger].points;
                         joueurs[numeroJoueurEchanger].points = joueur.points;
                         joueur.points = temp;
