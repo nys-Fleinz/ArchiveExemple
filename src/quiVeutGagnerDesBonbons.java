@@ -1,16 +1,30 @@
 import extensions.CSVFile;
 
 class quiVeutGagnerDesBonbons extends Program {
-    final String nomDuJeu = "Qui veut gagner des bonbons";
-    CSVFile questions = loadCSV("./ressources/questions.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
-    CSVFile eventsCSV = loadCSV("./ressources/events.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
+    final String NOMDUJEU = "Qui veut gagner des bonbons";
+    final String locationData = "../ressources/data.csv"; // Location du fichier data.csv
+    CSVFile dataCSV = loadCSV(locationData); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
+    CSVFile questions = loadCSV("../ressources/questions.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
+    CSVFile eventsCSV = loadCSV("../ressources/events.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
 
-
+    // initialiser le tableau de réponses à false pour après savoir si la question a été posée
     void initialiserTableauReponses(boolean[] questionsPosees) {
         for(int i=1; i<length(questionsPosees); i=i+1) {
             questionsPosees[i]=false;
         }
     }
+
+    //Teste la fonction initialiserTableauReponses
+    void testInitialiserTableauReponses() {
+        boolean[] questionsPosees = new boolean[5];
+        initialiserTableauReponses(questionsPosees);
+        assertEquals(false, questionsPosees[0]);
+        assertEquals(false, questionsPosees[1]);
+        assertEquals(false, questionsPosees[2]);
+        assertEquals(false, questionsPosees[3]);
+        assertEquals(false, questionsPosees[4]);
+    }
+
 
     //Boucle vérifiant si le string est un nombre en le convertisssant en char puis vérifiant si il est bien entre '0' et '9'
     int requireInt() {
@@ -26,6 +40,12 @@ class quiVeutGagnerDesBonbons extends Program {
         Joueur joueur = new Joueur();
         joueur.nom = nom;
         return joueur;
+    }
+
+    //Teste la fonction newJoueur
+    void testNewJoueur() {
+        Joueur joueur = newJoueur("Test");
+        assertEquals("Test", joueur.nom);
     }
 
 
@@ -55,6 +75,13 @@ class quiVeutGagnerDesBonbons extends Program {
         return ligne;
     }
 
+    //Teste la fonction getEvent
+    void testGetEvent() {
+        String[] event = getEvent();
+        assertEquals(3, length(event));
+    }
+
+
     //récupérer un tableau de String d'une ligne du fichier questions.csv
     String[] getQuestion(int numeroQuestion) {
         String[] ligne = new String[columnCount(questions, numeroQuestion)];
@@ -64,6 +91,15 @@ class quiVeutGagnerDesBonbons extends Program {
         return ligne;
     }
 
+    //Teste la fonction getQuestion
+    void testGetQuestion() {
+        String[] question = getQuestion(0);
+        assertEquals("question", question[0]);
+        assertEquals("nombre de réponses", question[1]);
+    }
+
+
+    //Poser une question à un joueur
     boolean poserQuestion(Joueur joueur, int numeroQuestion, Joueur[] joueurs) {
         if(joueur.bloque) {
             joueur.bloque=false;
@@ -148,6 +184,8 @@ class quiVeutGagnerDesBonbons extends Program {
         println(ANSI_RESET);
     }
 
+
+    //Afficher les réponses
     void afficherQuestion(String[] question){
         for(int i=0; i<stringToInt(question[1]); i=i+1) {
             print(ANSI_BLUE+"REPONSE "+ANSI_PURPLE+(i+1)+" -> ");
@@ -218,6 +256,7 @@ class quiVeutGagnerDesBonbons extends Program {
         println(ANSI_BLUE + "====================================" + ANSI_RESET);
     }
 
+    //Vérifier si un joueur est éliminé
     boolean joueurElimine(Joueur joueur) {
         boolean vf=false;
         if(joueur.vies<=0) {
@@ -226,12 +265,31 @@ class quiVeutGagnerDesBonbons extends Program {
         return vf;
     }
 
+    //Teste la fonction joueurElimine
+    void testJoueurElimine() {
+        Joueur joueur = new Joueur();
+        joueur.vies=0;
+        assertEquals(true, joueurElimine(joueur));
+        joueur.vies=1;
+        assertEquals(false, joueurElimine(joueur));
+        joueur.vies=-1;
+        assertEquals(true, joueurElimine(joueur));
+    }
+
+    //Générer un string avec un nombre de caractères et un caractère donné
     String genererCaracteres(int nombre, char car) {
         String generation="";
         for(int i=0; i<nombre; i=i+1) {
             generation=generation+car;
         }
         return generation;
+    }
+
+    //Teste la fonction genererCaracteres
+    void testGenererCaracteres() {
+        assertEquals("aaaa", genererCaracteres(4, 'a'));
+        assertEquals("bbbb", genererCaracteres(4, 'b'));
+        assertEquals("cc", genererCaracteres(2, 'c'));
     }
 
 
@@ -242,6 +300,13 @@ class quiVeutGagnerDesBonbons extends Program {
             affichage=affichage+"❤️ ";
         }
         return affichage;
+    }
+
+    //Teste la fonction viesToString
+    void testViesToString() {
+        assertEquals("❤️ ❤️ ❤️ ", viesToString(3));
+        assertEquals("❤️ ❤️ ", viesToString(2));
+        assertEquals("❤️ ", viesToString(1));
     }
 
     // EVENTS
@@ -396,12 +461,41 @@ class quiVeutGagnerDesBonbons extends Program {
     }
 
 
+    void sauvergarderData(Joueur[] joueurs) {
+        String[][] data = new String[rowCount(dataCSV)+length(joueurs)][columnCount(dataCSV)];
+        loadCSVString(data, dataCSV);
+        ajouterJoueurData(joueurs, data);
+        saveCSV(data, locationData);
+        dataCSV = loadCSV(locationData);
+    }
 
+    void loadCSVString(String[][] data, CSVFile csv) {
+        for(int i=0; i<rowCount(csv); i++) {
+            for(int j=0; j<columnCount(csv); j++) {
+                data[i][j] = getCell(csv, i, j);
+            }
+        }
+    }
+
+    void ajouterJoueurData(Joueur[] joueurs, String[][] data) {
+        for(int i=0; i<length(joueurs); i++) {
+            data[rowCount(dataCSV)+i][0] = ""+joueurs[i].nom;
+            data[rowCount(dataCSV)+i][1] = ""+joueurs[i].points;
+        }
+    }
+
+    //Afficher les joueurs avec leurs scores
+    void afficherData() {
+        for(int i=1; i<rowCount(dataCSV); i=i+1) {
+            println(ANSI_PURPLE+" ["+ANSI_GREEN+i+ANSI_PURPLE+"]"+ANSI_BLUE+getCell(dataCSV, i, 0)+ANSI_PURPLE+" : "+ANSI_BLUE+getCell(dataCSV, i, 1)+ANSI_RESET);
+        }
+        println("Appuyez pour continuer...");
+    }
 
 
     void algorithm() {
         clearScreen();
-        println(ANSI_BLUE + "[" + "🎮" + ANSI_BLUE + "] " + ANSI_GREEN + "Bienvenue dans '" + nomDuJeu + "'\n" + ANSI_RESET);
+        println(ANSI_BLUE + "[" + "🎮" + ANSI_BLUE + "] " + ANSI_GREEN + "Bienvenue dans '" + NOMDUJEU + "'\n" + ANSI_RESET);
         println(ANSI_BLUE + "[" + "📜" + ANSI_BLUE + "] " + ANSI_YELLOW + "Règle 1: Chaque joueur commence avec 3 vies." + ANSI_RESET);
         println(ANSI_BLUE + "[" + "🍬" + ANSI_BLUE + "] " + ANSI_YELLOW + "Règle 2: Une bonne réponse donne des points, une mauvaise fait perdre une vie." + ANSI_RESET);
         println(ANSI_BLUE + "[" + "✨" + ANSI_BLUE + "] " + ANSI_YELLOW + "Règle 3: Atteignez 10 bonnes réponses pour gagner !" + ANSI_RESET);
@@ -421,6 +515,31 @@ class quiVeutGagnerDesBonbons extends Program {
             printTableauScores(joueurs);
             print("\nAppuyez pour continuer...");
             readString();
+        }
+        sauvergarderData(joueurs);
+        menu();
+    }
+
+
+    void menu() {
+        while(true) {
+            clearScreen();
+            println("Voulez vous relancer une partie ou afficher les scores?\n");
+            println(ANSI_GREEN+"["+ANSI_BLUE+"1"+ANSI_GREEN+"] Relancer une partie");
+            println(ANSI_YELLOW+"["+ANSI_BLUE+"2"+ANSI_YELLOW+"] Afficher les scores");
+            println(ANSI_RED+"["+ANSI_BLUE+"3"+ANSI_RED+"] Quitter\n");
+            print(ANSI_PURPLE+"Votre choix: "+ANSI_RESET);
+            int choix = requireInt();
+            switch(choix) {
+                case 1:
+                    algorithm();
+                    break;
+                case 2:
+                    afficherData();
+                    break;
+                case 3:
+                    break;
+            }
         }
     }
 }
