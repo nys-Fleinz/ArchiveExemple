@@ -1,4 +1,5 @@
 import extensions.CSVFile;
+import extensions.File;
 
 class quiVeutGagnerDesBonbons extends Program {
     final String NOMDUJEU = "Qui veut gagner des bonbons";
@@ -400,35 +401,31 @@ class quiVeutGagnerDesBonbons extends Program {
     }
 
     int donnerQuestion(boolean[] questionsPosees) {
-        int i=0;
-        //vérifier combien de questions ont déjà été posées
-        while(i<length(questionsPosees) && questionsPosees[i]) {
-            if(questionsPosees[i]) {
-                println("Question "+i+" posée");
-                i=i+1;
+        int i = (int) (random() * length(questionsPosees));
+
+        while (i<length(questionsPosees) && questionsPosees[i]) {
+            i = i + 1;
+        }
+
+        questionsPosees[i] = true;
+
+        // Check if all questions have been asked
+        boolean allAsked = true;
+        for (int j = 0; j < length(questionsPosees); j++) {
+            if (!questionsPosees[j]) {
+                allAsked = false;
+                break;
+            }
+            else {
+                println("QUESTION "+j+" : "+questionsPosees[j]);
             }
         }
 
-        //si toutes les questions ont été posées, réinitialiser le tableau
-        if(i==length(questionsPosees)) {
+        if (allAsked) {
             initialiserTableauReponses(questionsPosees);
-            return donnerQuestion(questionsPosees);
         }
 
-        int numeroQuestion = (int) (random()*rowCount(questions));
-
-        // générer un numéro de question aléatoire et à partir de cette question, parcourir de 1 en 1 jusqu'à trouver une question non posée, mettre le compteur à 0 quand on arrive à la fin du tableau
-        // vérifier que la question n'est pas égale à 0, car c'est l'entête du fichier
-
-        while(questionsPosees[numeroQuestion] || numeroQuestion == 0) {
-            numeroQuestion = numeroQuestion + 1;
-            if(numeroQuestion == length(questionsPosees)) {
-            numeroQuestion = 1;
-            }
-        }
-
-        questionsPosees[numeroQuestion]=true;
-        return numeroQuestion;
+        return i + 1;
     }
 
     boolean partieTerminee(Joueur[] joueurs) {
@@ -440,6 +437,8 @@ class quiVeutGagnerDesBonbons extends Program {
                 elimines=elimines+1;
             }
             if(joueurs[compteur].bonnesReponses>=10) {
+                println("PARTIE TERMINEE");
+                readString();
                 termine=true;
             }
             compteur=compteur+1;
@@ -451,6 +450,22 @@ class quiVeutGagnerDesBonbons extends Program {
         return termine;
     }
 
+    //Fonction pour trier les joueurs par ordre décoissant de points
+    void trierDataJoueurs(String[][] data) {
+        for(int i=1; i<length(data, 1); i=i+1) {
+            for(int j=i+1; j<length(data,1); j=j+1) {
+                if(stringToInt(data[i][1])<stringToInt(data[j][1])) {
+                    for(int k=0; k<length(data, 2); k=k+1) {
+                        String temp = data[i][k];
+                        data[i][k] = data[j][k];
+                        data[j][k] = temp;
+                    }
+                }
+            }
+        }
+    }
+
+    //Fonction pour effacer l'écran
     void tour(Joueur[] joueurs, boolean[] questionsPosees) {
         for(int i=0; i<length(joueurs); i=i+1) {
             if(!joueurElimine(joueurs[i])) {
@@ -460,15 +475,17 @@ class quiVeutGagnerDesBonbons extends Program {
         }
     }
 
-
+    //Sauvegarder les données des joueurs dans le fichier data.csv
     void sauvergarderData(Joueur[] joueurs) {
         String[][] data = new String[rowCount(dataCSV)+length(joueurs)][columnCount(dataCSV)];
         loadCSVString(data, dataCSV);
         ajouterJoueurData(joueurs, data);
+        trierDataJoueurs(data);
         saveCSV(data, locationData);
         dataCSV = loadCSV(locationData);
     }
 
+    //Récupérer le nombre de colonnes d'un fichier CSV
     void loadCSVString(String[][] data, CSVFile csv) {
         for(int i=0; i<rowCount(csv); i++) {
             for(int j=0; j<columnCount(csv); j++) {
@@ -477,6 +494,7 @@ class quiVeutGagnerDesBonbons extends Program {
         }
     }
 
+    //Ajouter les joueurs et leurs scores au fichier data.csv
     void ajouterJoueurData(Joueur[] joueurs, String[][] data) {
         for(int i=0; i<length(joueurs); i++) {
             data[rowCount(dataCSV)+i][0] = ""+joueurs[i].nom;
@@ -487,13 +505,14 @@ class quiVeutGagnerDesBonbons extends Program {
     //Afficher les joueurs avec leurs scores
     void afficherData() {
         for(int i=1; i<rowCount(dataCSV); i=i+1) {
-            println(ANSI_PURPLE+" ["+ANSI_GREEN+i+ANSI_PURPLE+"]"+ANSI_BLUE+getCell(dataCSV, i, 0)+ANSI_PURPLE+" : "+ANSI_BLUE+getCell(dataCSV, i, 1)+ANSI_RESET);
+            println(ANSI_PURPLE+" ["+ANSI_GREEN+i+ANSI_PURPLE+"] "+ANSI_BLUE+getCell(dataCSV, i, 0)+ANSI_PURPLE+" : "+ANSI_BLUE+getCell(dataCSV, i, 1)+ANSI_RESET);
         }
-        println("Appuyez pour continuer...");
+        print("\nAppuyez pour continuer...");
+        readString();
     }
 
 
-    void algorithm() {
+    void main() {
         clearScreen();
         println(ANSI_BLUE + "[" + "🎮" + ANSI_BLUE + "] " + ANSI_GREEN + "Bienvenue dans '" + NOMDUJEU + "'\n" + ANSI_RESET);
         println(ANSI_BLUE + "[" + "📜" + ANSI_BLUE + "] " + ANSI_YELLOW + "Règle 1: Chaque joueur commence avec 3 vies." + ANSI_RESET);
@@ -507,7 +526,7 @@ class quiVeutGagnerDesBonbons extends Program {
         Joueur[] joueurs = CreerJoueurs();
         
         // INITIALISER DATA
-        boolean[] questionsPosees = new boolean[rowCount(questions)];
+        boolean[] questionsPosees = new boolean[rowCount(questions)-1];
         initialiserTableauReponses(questionsPosees);
 
         while(!partieTerminee(joueurs)) {
@@ -517,22 +536,34 @@ class quiVeutGagnerDesBonbons extends Program {
             readString();
         }
         sauvergarderData(joueurs);
-        menu();
+        algorithm();
+    }
+
+    //Afficher la bannière du jeu
+    void showBanner() {
+        File banner = newFile("../ressources/banner.txt");
+        print(ANSI_PURPLE);
+        while(ready(banner)){
+            println(readLine(banner));
+        }
+        println(); println(); println(); println();
     }
 
 
-    void menu() {
-        while(true) {
+    void algorithm() {
+        int choix = 0;
+        while(choix!=3 && true) {
             clearScreen();
-            println("Voulez vous relancer une partie ou afficher les scores?\n");
-            println(ANSI_GREEN+"["+ANSI_BLUE+"1"+ANSI_GREEN+"] Relancer une partie");
+            showBanner();
+            println(ANSI_YELLOW+"Voulez vous lancer une partie ou afficher les scores?\n");
+            println(ANSI_GREEN+"["+ANSI_BLUE+"1"+ANSI_GREEN+"] Lancer une partie");
             println(ANSI_YELLOW+"["+ANSI_BLUE+"2"+ANSI_YELLOW+"] Afficher les scores");
             println(ANSI_RED+"["+ANSI_BLUE+"3"+ANSI_RED+"] Quitter\n");
             print(ANSI_PURPLE+"Votre choix: "+ANSI_RESET);
-            int choix = requireInt();
+            choix = requireInt();
             switch(choix) {
                 case 1:
-                    algorithm();
+                    main();
                     break;
                 case 2:
                     afficherData();
