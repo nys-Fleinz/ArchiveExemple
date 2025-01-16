@@ -10,7 +10,7 @@ class quiVeutGagnerDesBonbons extends Program {
 
     // initialiser le tableau de réponses à false pour après savoir si la question a été posée
     void initialiserTableauReponses(boolean[] questionsPosees) {
-        for(int i=1; i<length(questionsPosees); i=i+1) {
+        for(int i=0; i<length(questionsPosees); i=i+1) {
             questionsPosees[i]=false;
         }
     }
@@ -238,7 +238,6 @@ class quiVeutGagnerDesBonbons extends Program {
     }
 
     void printTableauScores(Joueur[] joueurs) {
-        clearScreen();
         println(ANSI_BLUE + "\n======= Tableau des Scores ========" + ANSI_RESET);
         //AFFICHAGE HEADER
         println(ANSI_YELLOW+"|"+ANSI_PURPLE+" JOUEURS          "+ANSI_YELLOW+" | "+ANSI_RED+"PTS "+ANSI_YELLOW+"| "+ANSI_GREEN+" VIES  "+ANSI_YELLOW+"|");
@@ -401,32 +400,29 @@ class quiVeutGagnerDesBonbons extends Program {
     }
 
     int donnerQuestion(boolean[] questionsPosees) {
-        int i = (int) (random() * length(questionsPosees));
-
-        while (i<length(questionsPosees) && questionsPosees[i]) {
-            i = i + 1;
-        }
-
-        questionsPosees[i] = true;
-
-        // Check if all questions have been asked
+        // Vérifie si toutes les questions ont déjà été posées
         boolean allAsked = true;
         for (int j = 0; j < length(questionsPosees); j++) {
-            if (!questionsPosees[j]) {
+            if(!questionsPosees[j]) {
                 allAsked = false;
                 break;
             }
-            else {
-                println("QUESTION "+j+" : "+questionsPosees[j]);
-            }
         }
-
+        // Réinitialise le tableau si toutes les questions ont été posées
         if (allAsked) {
             initialiserTableauReponses(questionsPosees);
         }
-
-        return i + 1;
+        // Choisit une question au hasard qui n'a pas encore été posée
+        int i;
+        do {
+            i = (int) (random() * length(questionsPosees));
+        } while (questionsPosees[i]); // Continue tant que la question est déjà posée
+        // Marque la question comme posée
+        questionsPosees[i] = true;
+        // Retourne l'indice de la question posée
+        return i+1;
     }
+
 
     boolean partieTerminee(Joueur[] joueurs) {
         boolean termine=false;
@@ -437,13 +433,10 @@ class quiVeutGagnerDesBonbons extends Program {
                 elimines=elimines+1;
             }
             if(joueurs[compteur].bonnesReponses>=10) {
-                println("PARTIE TERMINEE");
-                readString();
                 termine=true;
             }
             compteur=compteur+1;
         }
-
         if(compteur==elimines) {
             termine=true;
         }
@@ -452,7 +445,7 @@ class quiVeutGagnerDesBonbons extends Program {
 
     //Fonction pour trier les joueurs par ordre décoissant de points
     void trierDataJoueurs(String[][] data) {
-        for(int i=1; i<length(data, 1); i=i+1) {
+        for(int i=0; i<length(data, 1); i=i+1) {
             for(int j=i+1; j<length(data,1); j=j+1) {
                 if(stringToInt(data[i][1])<stringToInt(data[j][1])) {
                     for(int k=0; k<length(data, 2); k=k+1) {
@@ -465,7 +458,7 @@ class quiVeutGagnerDesBonbons extends Program {
         }
     }
 
-    //Fonction pour effacer l'écran
+    //Fonction pour faire un tour de jeu
     void tour(Joueur[] joueurs, boolean[] questionsPosees) {
         for(int i=0; i<length(joueurs); i=i+1) {
             if(!joueurElimine(joueurs[i])) {
@@ -504,8 +497,8 @@ class quiVeutGagnerDesBonbons extends Program {
 
     //Afficher les joueurs avec leurs scores
     void afficherData() {
-        for(int i=1; i<rowCount(dataCSV); i=i+1) {
-            println(ANSI_PURPLE+" ["+ANSI_GREEN+i+ANSI_PURPLE+"] "+ANSI_BLUE+getCell(dataCSV, i, 0)+ANSI_PURPLE+" : "+ANSI_BLUE+getCell(dataCSV, i, 1)+ANSI_RESET);
+        for(int i=0; i<rowCount(dataCSV); i=i+1) {
+            println(ANSI_PURPLE+" ["+ANSI_GREEN+(i+1)+ANSI_PURPLE+"] "+ANSI_BLUE+getCell(dataCSV, i, 0)+ANSI_PURPLE+" : "+ANSI_BLUE+getCell(dataCSV, i, 1)+ANSI_RESET);
         }
         print("\nAppuyez pour continuer...");
         readString();
@@ -531,10 +524,19 @@ class quiVeutGagnerDesBonbons extends Program {
 
         while(!partieTerminee(joueurs)) {
             tour(joueurs, questionsPosees);
+            clearScreen();
             printTableauScores(joueurs);
             print("\nAppuyez pour continuer...");
             readString();
         }
+
+        clearScreen();
+        showBanner();
+        println(ANSI_YELLOW+"[🏆] PARTIE TERMINEE [🏆]"+ANSI_RESET);
+        printTableauScores(joueurs);
+        println("\nAppuyez pour continuer...");
+        readString();
+
         sauvergarderData(joueurs);
         algorithm();
     }
