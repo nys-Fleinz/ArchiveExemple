@@ -3,10 +3,10 @@ import extensions.File;
 
 class quiVeutGagnerDesBonbons extends Program {
     final String NOMDUJEU = "Qui veut gagner des bonbons";
-    final String locationData = "../ressources/data.csv"; // Location du fichier data.csv
+    final String locationData = "./ressources/data.csv"; // Location du fichier data.csv
     CSVFile dataCSV = loadCSV(locationData); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
-    CSVFile questions = loadCSV("../ressources/questions.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
-    CSVFile eventsCSV = loadCSV("../ressources/events.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
+    CSVFile questions = loadCSV("./ressources/questions.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
+    CSVFile eventsCSV = loadCSV("./ressources/events.csv"); // A MODIFIER SI UTILISATION DES SCRIPTS .SH
 
     // initialiser le tableau de réponses à false pour après savoir si la question a été posée
     void initialiserTableauReponses(boolean[] questionsPosees) {
@@ -25,7 +25,6 @@ class quiVeutGagnerDesBonbons extends Program {
         assertEquals(false, questionsPosees[3]);
         assertEquals(false, questionsPosees[4]);
     }
-
 
     //Boucle vérifiant si le string est un nombre en le convertisssant en char puis vérifiant si il est bien entre '0' et '9'
     int requireInt() {
@@ -48,7 +47,6 @@ class quiVeutGagnerDesBonbons extends Program {
         Joueur joueur = newJoueur("Test");
         assertEquals("Test", joueur.nom);
     }
-
 
     //Crée le tableau de joueurs à l'aide du nombre de l'entrée utilisateur 
     Joueur[] CreerJoueurs() {
@@ -82,7 +80,6 @@ class quiVeutGagnerDesBonbons extends Program {
         assertEquals(3, length(event));
     }
 
-
     //récupérer un tableau de String d'une ligne du fichier questions.csv
     String[] getQuestion(int numeroQuestion) {
         String[] ligne = new String[columnCount(questions, numeroQuestion)];
@@ -98,7 +95,6 @@ class quiVeutGagnerDesBonbons extends Program {
         assertEquals("question", question[0]);
         assertEquals("nombre de réponses", question[1]);
     }
-
 
     //Poser une question à un joueur
     boolean poserQuestion(Joueur joueur, int numeroQuestion, Joueur[] joueurs) {
@@ -126,7 +122,6 @@ class quiVeutGagnerDesBonbons extends Program {
         afficherQuestion(question); //afficher les réponses
         return repondreQuestion(joueur, question, event, prix, joueurs);
     }
-
 
     //Formater la question pour l'affichage
     void formaterQuestion(String[] question) {
@@ -185,7 +180,6 @@ class quiVeutGagnerDesBonbons extends Program {
         println(ANSI_RESET);
     }
 
-
     //Afficher les réponses
     void afficherQuestion(String[] question){
         for(int i=0; i<stringToInt(question[1]); i=i+1) {
@@ -194,7 +188,6 @@ class quiVeutGagnerDesBonbons extends Program {
             println();
         }
     }
-
 
     //Traîter les entrées utilisateurs et quelques affichages
     boolean repondreQuestion(Joueur joueur, String[] question, String[] event, int prix, Joueur[] joueurs) {
@@ -504,7 +497,6 @@ class quiVeutGagnerDesBonbons extends Program {
         readString();
     }
 
-
     void main() {
         clearScreen();
         println(ANSI_BLUE + "[" + "🎮" + ANSI_BLUE + "] " + ANSI_GREEN + "Bienvenue dans '" + NOMDUJEU + "'\n" + ANSI_RESET);
@@ -543,14 +535,13 @@ class quiVeutGagnerDesBonbons extends Program {
 
     //Afficher la bannière du jeu
     void showBanner() {
-        File banner = newFile("../ressources/banner.txt");
+        File banner = newFile("./ressources/banner.txt");
         print(ANSI_PURPLE);
         while(ready(banner)){
             println(readLine(banner));
         }
         println(); println(); println(); println();
     }
-
 
     void algorithm() {
         int choix = 0;
